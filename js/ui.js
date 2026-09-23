@@ -4,6 +4,9 @@ import { sfx } from "./audio.js";
 
 const $=id=>document.getElementById(id);
 let gameScene=null;
+// tr: one-line localizer for scene-layer messages. The scene imports this so
+// every user-facing log line follows the language selector.
+export function tr(en,zh){ return language==="zh"?zh:en; }
 let language=localStorage.getItem("flyline_language")||"en";
 const LANG={
   en:{label:"Language",start:"Start first generation →",continue:g=>`Continue generation ${g} →`,reset:"Clear lineage save",pause:"Pause / menu",subtitle:"Fruit-fly lineage · biological survival game",intro:"You are a lineage, not a single fly. Gather food and energy → lay eggs automatically; the predator commits to a ballistic strike. When the GF reflex lights up READY, press Space to jump.",phone:"Mobile: hold and drag anywhere to steer; tap GF when it lights up.",food:"Food: sugar +12 (safe) · yeast +26 (rim, predator risk) · rot +38 (odor exposure).",circuit:"Escape circuit · connectome-inspired",real:"Real connectivity",shuffled:"Shuffled connectivity",seed:"Set seed",experiment:"Run control experiment · real vs shuffled",draftPrompt:"What will this generation leave behind? Choose one mutation for the next generation.",touchHint:"Hold and drag anywhere to steer",brainTitle:"Choose your fly's brain",brainNote:"Same world, same rules. The brain only decides where to go — the GF brainstem still owns the escape jump.",brainManual:"You drive · WASD",brainGenes:"auto-pilot baseline",brainCircuit:"FFW-CX/0.1 · 24 neurons",brainJudgment:"local heuristic · free",brainJudgmentKey:"System One · jev-1.13.0",brainKeyLabel:"System One key",brainKeyNote:"jev-1.13.0 via same-origin /api/jev proxy · key stored in this browser only · on failure the local heuristic takes over",brainDl:"⤓ log",brainLine:`Brain this generation`,coach1:"<b>MOVE & EAT</b> — steer toward the green sugar. Energy above the line becomes eggs automatically.",coach2:"<b>ESCAPE</b> — the predator just committed. Wait for <b>GF READY</b>, then press SPACE (or tap the GF button) to jump clear.",coach3:"<b>DRAFT</b> — pick ONE mutation: it is the body your next fly is born with. The wild type evolves too.",coachGot:"GOT IT — tap to dismiss",replay:"◉ DEATH REPLAY ×0.5",deathCopy:"COPY DEATH AS CHALLENGE",deathCopied:"COPIED ✓ — PASTE IT ANYWHERE",esc:`The predator is now faster and safe food is scarcer.`},
@@ -83,6 +86,24 @@ export function initUI(scene){
   wireHud();
   wireTouch();
   document.addEventListener("flyline:log",e=>addLog(e.detail));
+  // quest completion gets a real banner, not just a log line: the freemint is
+  // the player's receipt, and it must be impossible to play past it
+  document.addEventListener("flyline:quest",e=>{
+    const old=document.getElementById("questToast"); if(old) old.remove();
+    const q=e.detail.quest;
+    const el=document.createElement("div");
+    el.id="questToast";
+    const title=language==="en"?"DISH QUEST COMPLETE":"任务完成";
+    const body=language==="en"
+      ?`<b>${q}</b> recorded — this unlocks the free Passport mint.`
+      :`已记录 <b>${q}</b> —— 解锁免费护照铸造。`;
+    el.innerHTML=`<div class="qTitle">🏅 ${title}</div><div class="qBody">${body}</div>`+
+      `<a class="qLink" href="/#mint">${language==="en"?"CLAIM FREE MINT →":"去领免费铸造 →"}</a>`;
+    document.body.appendChild(el);
+    const kill=()=>el.remove();
+    el.addEventListener("click",e=>{ if(e.target.tagName!=="A") kill(); });
+    setTimeout(kill,12000);
+  });
   document.addEventListener("flyline:genend",e=>showDraft(e.detail));
   document.addEventListener("flyline:genstart",e=>onGenStart(e.detail));
   // step-2 coach: the first committed lunge at the player (manual brain only)
@@ -262,6 +283,19 @@ function showDraft(d){
   });
   $("dRival").textContent=en?`Wild type has accumulated ${gameScene.rivalFly.rivalTraits.length} mutations — it evolves too.`:`野生型已积累 ${gameScene.rivalFly.rivalTraits.length} 个突变 — 它也在进化。`;
   document.querySelectorAll(".brainReport").forEach(e=>e.remove());
+  document.querySelectorAll(".questLine").forEach(e=>e.remove());
+  {
+    // quest status on every draft screen: no one should have to wonder
+    // whether the mint quests noticed their run
+    let store={}; try{ store=JSON.parse(localStorage.getItem("flyline_quests_v1")||"{}"); }catch(_){}
+    const mark=q=>store[q]?"✓":"✗";
+    const el=document.createElement("div");
+    el.className="tiny questLine";
+    el.innerHTML=en
+      ?`DISH quests — SURVIVOR ${mark("SURVIVOR")} · FORAGER ${mark("FORAGER")} (${Math.min(d.eggs,3)}/3 eggs) · REFLEX ${mark("REFLEX")} (${Math.min(d.escapes||0,3)}/3 escapes) · EXAMINED ${mark("EXAMINED")} (<a href="?bench=1&seed=42&brain=circuit&gens=2" target="_blank" rel="noreferrer">exam room</a>) — any one unlocks the free mint`
+      :`培养皿任务 —— 生存者 ${mark("SURVIVOR")} · 觅食者 ${mark("FORAGER")}（卵 ${Math.min(d.eggs,3)}/3）· 反射 ${mark("REFLEX")}（逃逸 ${Math.min(d.escapes||0,3)}/3）· 受试 ${mark("EXAMINED")}（<a href="?bench=1&seed=42&brain=circuit&gens=2" target="_blank" rel="noreferrer">考场</a>）—— 任一完成即解锁免费铸造`;
+    $("dRival").after(el);
+  }
   if(d.brain&&d.brain.id!=="manual"&&d.brain.decisions>0){
     const bl=document.createElement("div");
     bl.className="tiny brainReport";

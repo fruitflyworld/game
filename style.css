@@ -198,3 +198,15 @@ body.touch #joyZone{display:block;} body.touch #gfBtn{display:block;}
   font-size:11.5px;letter-spacing:.08em;}
 #dDeath:hover{background:rgba(168,57,74,.18);}
 #dDeath:active{transform:translateY(1px);}
+
+/* quest-complete toast: the freemint receipt must be loud */
+#questToast{position:fixed;left:50%;bottom:16%;transform:translateX(-50%);z-index:60;
+  background:rgba(12,10,8,.94);border:1px solid var(--gold,#baff35);border-radius:10px;
+  padding:14px 18px;text-align:center;max-width:340px;cursor:pointer;
+  box-shadow:0 6px 30px rgba(0,0,0,.5);animation:qin .35s ease;}
+#questToast .qTitle{color:var(--gold,#baff35);font-weight:700;font-size:13px;letter-spacing:.08em;}
+#questToast .qBody{color:#e8e2d0;font-size:12.5px;margin:6px 0 8px;line-height:1.5;}
+#questToast .qLink{display:inline-block;color:#fff;background:var(--gold,#baff35);
+  border-radius:6px;padding:6px 12px;font-size:11.5px;font-weight:700;letter-spacing:.08em;
+  text-decoration:none;}
+@keyframes qin{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}

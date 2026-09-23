@@ -13,6 +13,7 @@ import { createCircuitBrain } from "./brain-circuit.js";
 import { createLocalBrain } from "./brain-local.js";
 import { createJevBrain, JEV_MODEL_DEFAULT } from "./brain-jev.js";
 import { createBrainDriver } from "./brain-driver.js";
+import { tr } from "./ui.js";
 import { sfx } from "./audio.js";
 
 const SAVE_KEY="flyline_v1";
@@ -151,12 +152,12 @@ export class GameScene extends Phaser.Scene {
     this.saveState();
     this.refreshBrainHud();
     if(!opts||!opts.silent){
-      this.uiLog(id==="manual"?"Brain: MANUAL — you drive (WASD + Space)."
-        :id==="genes"?"Brain: GENES — gene-weighted auto-pilot."
-        :id==="circuit"?"Brain: CIRCUIT — FFW-CX/0.1, 24 spiking neurons."
+      this.uiLog(id==="manual"?tr("Brain: MANUAL — you drive (WASD + Space).","大脑:手动 —— 你来开(WASD + 空格)。")
+        :id==="genes"?tr("Brain: GENES — gene-weighted auto-pilot.","大脑:基因 —— 基因加权自动驾驶。")
+        :id==="circuit"?tr("Brain: CIRCUIT — FFW-CX/0.1, 24 spiking neurons.","大脑:回路 —— FFW-CX/0.1,24 个脉冲神经元。")
         :(this.brainDriver&&this.brainDriver.model!==("local-heuristic/0.1")
-          ?"Brain: JUDGMENT — "+this.brainDriver.model+" via /api/jev."
-          :"Brain: JUDGMENT — local-heuristic/0.1 (no key set; free offline)."));
+          ?tr("Brain: JUDGMENT — ","大脑:判断 —— ")+this.brainDriver.model+tr(" via /api/jev.","（经 /api/jev 代理）。")
+          :tr("Brain: JUDGMENT — local-heuristic/0.1 (no key set; free offline).","大脑:判断 —— local-heuristic/0.1（未设 key,免费离线）。")));
       if(prev!==id) sfx.uiTick();
     }
     document.dispatchEvent(new CustomEvent("flyline:brain",{detail:{
@@ -175,7 +176,7 @@ export class GameScene extends Phaser.Scene {
     if(!this.judgmentFallback) return;
     if(!this.judgmentWarned){
       this.judgmentWarned=true;
-      this.uiLog("Judgment model unreachable — fell back to local-heuristic/0.1. Check your key or the /api/jev proxy.");
+      this.uiLog(tr("Judgment model unreachable — fell back to local-heuristic/0.1. Check your key or the /api/jev proxy.","判断模型不可达 —— 已切换 local-heuristic/0.1。检查你的 key 或 /api/jev 代理。"));
     }
     const tick=this.brainDriver?this.brainDriver.last:null;
     this.brainDriver=createBrainDriver({
@@ -219,7 +220,7 @@ export class GameScene extends Phaser.Scene {
       });
   }
   onBrainError(){
-    this.uiLog("Brain error — steering falls back to genes until it recovers.");
+    this.uiLog(tr("Brain error — steering falls back to genes until it recovers.","大脑出错 —— 转向暂时回落到基因模式,恢复后自动切回。"));
   }
   downloadDecisionLog(){
     const payload=window.FlyLabAPI.getDecisionLog();
@@ -350,7 +351,7 @@ export class GameScene extends Phaser.Scene {
     if(poolR.length&&gen>1){
       const pick=poolR[Math.floor(rng()*poolR.length)];
       this.rivalFly.rivalTraits.push(pick);
-      this.uiLog(`🧬 Wild type evolved: ${pick}`);
+      this.uiLog(`🧬 `+tr(`Wild type evolved: ${pick}`,`野生型进化:${TRAIT_INFO[pick]?TRAIT_INFO[pick].name.split(" ")[0]:pick}`));
     }
     resetFly(this.rivalFly,randomInDish(0.5));
 
@@ -481,7 +482,7 @@ export class GameScene extends Phaser.Scene {
     const reflex=fly.gf.armed;
     const hopper=fly.stats.hopper&&!reflex;
     if(!reflex&&!hopper) return;
-    if(hopper&&fly.isPlayer) this.uiLog("Hopper: active escape costs more energy.");
+    if(hopper&&fly.isPlayer) this.uiLog(tr("Hopper: active escape costs more energy.","跳跃者:主动起跳消耗更多能量。"));
     const cost=reflex?DASH_COST*0.6:DASH_COST*1.5;
     const finalCost=fly.stats.swift&&!reflex?cost*1.4:cost;
     if(fly.energy<finalCost) return;
@@ -560,7 +561,7 @@ export class GameScene extends Phaser.Scene {
     const inDiapause=fly.stats.diapause&&fly.energy<30;
     const diapauseSlow=inDiapause?0.6:1;
     const diapauseMetab=inDiapause?0.4:1;
-    if(fly.isPlayer&&inDiapause&&!fly._diapauseNotified){ this.floater(fly,"Diapause: energy saving",CSS.violet||CSS.lavender); this.uiLog("Diapause active: lower metabolism, slower movement."); fly._diapauseNotified=true; }
+    if(fly.isPlayer&&inDiapause&&!fly._diapauseNotified){ this.floater(fly,tr("Diapause: energy saving","滞育:节能中"),CSS.violet||CSS.lavender); this.uiLog(tr("Diapause active: lower metabolism, slower movement.","滞育激活:代谢降低,移动变慢。")); fly._diapauseNotified=true; }
     if(!inDiapause) fly._diapauseNotified=false;
     const adhSlow=fly.stats.adh&&fly.boostT>0?0.72:1;
     const foragerSlow=fly.stats.forager&&fly.foodBoostT>0?0.82:1;
@@ -605,11 +606,11 @@ export class GameScene extends Phaser.Scene {
         const site={x:fly.x,y:fly.y,owner:fly.isPlayer?"player":"rival",t:3};
         fly.pheromoneSite=site;
         this.pheromoneSite=site;
-        if(fly.isPlayer) this.uiLog("Pheromone: the wild type will track your egg cluster.");
+        if(fly.isPlayer) this.uiLog(tr("Pheromone: the wild type will track your egg cluster.","信息素:野生型会追踪你的卵群。"));
         else if(this.playerFly.stats.pheromone){
           this.playerFly.pheromoneBoostT=3;
           this.playerFly.pheromoneSite={x:fly.x,y:fly.y};
-          this.uiLog("Pheromone: rival egg cluster found; nearby food gives +50% for 3s.");
+          this.uiLog(tr("Pheromone: rival egg cluster found; nearby food gives +50% for 3s.","信息素:发现对手卵群;附近食物 3 秒内 +50%。"));
         }
         if(fly.isPlayer&&this.rivalFly.stats.pheromone){
           this.rivalFly.pheromoneBoostT=3;
@@ -622,12 +623,12 @@ export class GameScene extends Phaser.Scene {
       this.eggsGroup.add(eggSpr);
       if(fly.isPlayer){
         sfx.egg(); this.emEgg.explode(12,p.x,p.y); this.floater(fly,"+1 egg",CSS.egg);
-        this.uiLog(`Egg laid! +1 offspring (egg ${fly.eggs})`);
+        this.uiLog(tr(`Egg laid! +1 offspring (egg ${fly.eggs})`,`产卵!+1 后代(第 ${fly.eggs} 枚)`));
       }
     }
     if(fly.energy<=0){
       fly.energy=0; fly.alive=false;
-      if(fly.isPlayer){ fly.deathReason="energy"; sfx.death(); this.uiLog("Energy depleted. This generation is over."); }
+      if(fly.isPlayer){ fly.deathReason="energy"; sfx.death(); this.uiLog(tr("Energy depleted. This generation is over.","能量耗尽。这一代结束了。")); }
     }
   }
 
@@ -705,9 +706,9 @@ export class GameScene extends Phaser.Scene {
           const ka=normalize({x:pr.x-f.x,y:pr.y-f.y});
           pr.vx+=ka.x*1.6; pr.vy+=ka.y*1.6; pr.phase="recover"; pr.recoverT=-0.7; f.gf.iframe=0.25;
           if(f.isPlayer){
-            sfx.tiger(); this.floater(f,"Tiger counterattack!",CSS.gold); this.cameras.main.shake(180,0.01);
+            sfx.tiger(); this.floater(f,tr("Tiger counterattack!","虎纹反击!"),CSS.gold); this.cameras.main.shake(180,0.01);
             const p=this.toPx(pr.x,pr.y); this.emGold.explode(18,p.x,p.y);
-            this.uiLog("Tiger counterattack: the predator was knocked back and stunned!");
+            this.uiLog(tr("Tiger counterattack: the predator was knocked back and stunned!","虎纹反击:捕食者被击退并震慑!"));
           }
           continue;
         }
@@ -715,10 +716,10 @@ export class GameScene extends Phaser.Scene {
         if(f.isPlayer){
           this.dangerFlash=1; this.cameras.main.shake(90,0.004);
           if(!f._warned){ sfx.bite(); this.uiLog(this.isTouch
-            ?"⚠ Committed strike connected! Tap GF when the button lights up to jump clear."
-            :"⚠ Committed strike connected! Press Space when the GF reflex lights up to dodge the ballistic strike."); f._warned=true; }
+            ?tr("⚠ Committed strike connected! Tap GF when the button lights up to jump clear.","⚠ 扑击命中!GF 按钮亮起时点它起跳脱身。")
+            :tr("⚠ Committed strike connected! Press Space when the GF reflex lights up to dodge the ballistic strike.","⚠ 扑击命中!GF 反射亮起时按空格,躲开这次弹道扑杀。")); f._warned=true; }
         }
-        if(f.energy<=0){ f.energy=0; f.alive=false; if(f.isPlayer){ f.deathReason="predator"; sfx.death(); this.uiLog("The predator killed you."); } }
+        if(f.energy<=0){ f.energy=0; f.alive=false; if(f.isPlayer){ f.deathReason="predator"; sfx.death(); this.uiLog(tr("The predator killed you.","你被捕食者杀死了。")); } }
       } else if(f.isPlayer) f._warned=false;
     }
     if(this.playerFly.alive){
@@ -738,7 +739,7 @@ export class GameScene extends Phaser.Scene {
     this.ended=true; this.running=false;
     const eggs=this.playerFly.eggs, rivalEggs=this.rivalFly.eggs;
     const deathReason=this.playerFly.alive?"time":(this.playerFly.deathReason||"predator");
-    this.uiLog(this.playerFly.alive?"⏱ You survived the full 50 seconds.":"🧬 This generation ended, but your lineage continues.");
+    this.uiLog(this.playerFly.alive?tr("⏱ You survived the full 50 seconds.","⏱ 你熬过了完整 50 秒。"):tr("🧬 This generation ended, but your lineage continues.","🧬 这一代结束了,但你的血脉还在继续。"));
     this.state.eggsHistory.push(eggs); if(this.state.eggsHistory.length>30) this.state.eggsHistory.shift();
     this.state.lineageEggs+=eggs;
     const isBest=eggs>this.state.bestEggs; if(isBest) this.state.bestEggs=eggs;
@@ -773,7 +774,8 @@ export class GameScene extends Phaser.Scene {
       const hit=(quest)=>{
         if(store[quest]) return;
         store[quest]={quest,...base};
-        this.uiLog(`🏅 DISH quest complete: ${quest} — claim your free mint on the Passport page.`);
+        this.uiLog(tr(`🏅 DISH quest complete: ${quest} — claim your free mint on the Passport page.`,`🏅 任务完成:${quest} —— 到首页护照区领取免费铸造。`));
+        document.dispatchEvent(new CustomEvent("flyline:quest",{detail:{quest}}));
       };
       if(detail.alive) hit("SURVIVOR");
       if(detail.eggs>=3) hit("FORAGER");
@@ -783,7 +785,7 @@ export class GameScene extends Phaser.Scene {
   }
   nextGen(traitId){
     this.state.ownedTraits.push(traitId);
-    this.uiLog(`🧬 Generation ${this.state.genNumber+1} inherits mutation: ${traitId}`);
+    this.uiLog(tr(`🧬 Generation ${this.state.genNumber+1} inherits mutation: ${traitId}`,`🧬 第 ${this.state.genNumber+1} 代继承突变:${TRAIT_INFO[traitId]?TRAIT_INFO[traitId].name.split(" ")[0]:traitId}`));
     this.state.genNumber+=1;
     this.resetGenerationWorld();
   }
@@ -919,7 +921,7 @@ export class GameScene extends Phaser.Scene {
   // ---- UI hooks ----
   beginRun(){
     this.started=true; this.running=true; sfx.resume();
-    if(this.state.genNumber===1&&this.state.ownedTraits.length===0) this.uiLog("Eat sugar to restore energy. When the predator commits, wait for GF READY, then jump.");
+    if(this.state.genNumber===1&&this.state.ownedTraits.length===0) this.uiLog(tr("Eat sugar to restore energy. When the predator commits, wait for GF READY, then jump.","吃糖恢复能量。捕食者锁定时,等 GF「就绪」亮起,再起跳。"));
   }
   setPaused(p){ if(this.started&&!this.ended) this.running=!p; }
   setConnectivity(mode){ this.state.connectivityMode=mode; this.saveState(); }
