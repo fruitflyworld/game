@@ -859,7 +859,8 @@ export class GameScene extends Phaser.Scene {
             avgConfidence:log.length?log.reduce((a,r)=>a+r.confidence,0)/log.length:null } };
         out.push({ gen:g, eggs:detail.eggs, rivalEggs:detail.rivalEggs,
           survived:detail.alive, deathReason:detail.deathReason,
-          decisions:log.length, logHash:contentHash(log.map(r=>r.contentHash)) });
+          decisions:log.length, logHash:contentHash(log.map(r=>r.contentHash)),
+          log }); // full per-gen records: the deliverable is the whole chain, not the last generation
         // quests record exactly as a human run (recordDishQuests skips __bench)
         const b=this.__bench; this.__bench=false; this.recordDishQuests(detail); this.__bench=b;
         if(g<gens){
