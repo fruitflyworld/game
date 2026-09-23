@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Fruit Fly World · Fruit-fly lineage survival game</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div id="languageControl" aria-label="Language">
+  <label for="languageSelect">Language</label>
+  <select id="languageSelect">
+    <option value="en">English</option>
+    <option value="zh">简体中文</option>
+    <option value="ja">日本語</option>
+    <option value="ko">한국어</option>
+    <option value="es">Español</option>
+  </select>
+</div>
+<div id="gameWrap">
+  <div id="canvasHost"></div>
+
+  <!-- ============ HUD (DOM overlay) ============ -->
+  <div id="hud" class="hidden">
+    <div class="hudTop">
+      <div class="chip">Generation <b id="hGen">1</b></div>
+      <div class="chip" id="hCycle">☀ Day</div>
+      <div class="chip">⏱ <b id="hTime">50.0</b>s</div>
+      <div class="chip">Eggs <b id="hEggs" class="c-egg">0</b></div>
+      <div class="chip">Lineage <b id="hLineage" class="c-egg">0</b></div>
+      <div class="chip">Best <b id="hBest">0</b></div>
+    </div>
+
+    <div class="hudLeft">
+      <div class="bwrap"><div class="blabel">Energy <span id="hEnergyTxt" class="c-teal">100</span></div>
+        <div class="bar energy"><i id="hEnergyBar"></i><s id="hLayMark"></s></div></div>
+      <div class="bwrap"><div class="blabel">Escape reflex GF · <span id="hGfState" class="c-teal">Standby</span></div>
+        <div class="bar dash" id="hGfWrap"><i id="hGfBar"></i></div>
+        <div class="neuro" title="Connectome-inspired synapse counts (Ache et al. 2019 / MaleCNS v1.0). Research-reference weights, not membrane parameters.">
+          <div class="nrow"><span class="nname">LC4<s>2442Σ</s></span><div class="bar nbar lc4"><i id="hLc4Bar"></i></div></div>
+          <div class="nrow"><span class="nname">LPLC2<s>1366Σ</s></span><div class="bar nbar lplc2"><i id="hLplc2Bar"></i></div></div>
+          <div class="nchain">loom → LC4/LPLC2 → GF → READY → escape</div>
+        </div></div>
+      <div class="bwrap"><div class="blabel">You <b id="hRvYou" class="c-egg">0</b> : Wild type <b id="hRvRival" class="c-lav">0</b></div>
+        <div class="bar rival"><i id="hRvYouBar" class="c-egg-bg"></i><i id="hRvRivalBar" class="c-lav-bg"></i></div></div>
+      <div class="bwrap" id="brainPanel" hidden>
+        <div class="blabel">Brain · <span id="hBrainModel" class="c-gold">—</span> · <span id="hBrainConf"></span></div>
+        <div class="neuro">
+          <div class="nrow bmrow"><span class="nname">APPROACH</span><div class="bar nbar bm"><i id="hBmApproach"></i></div></div>
+          <div class="nrow bmrow"><span class="nname">AVOID</span><div class="bar nbar bm"><i id="hBmAvoid"></i></div></div>
+          <div class="nrow bmrow"><span class="nname">EXPLORE</span><div class="bar nbar bm"><i id="hBmExplore"></i></div></div>
+          <div class="nrow bmrow"><span class="nname">FREEZE</span><div class="bar nbar bm"><i id="hBmFreeze"></i></div></div>
+          <div class="nrow bmrow"><span class="nname">DANGER</span><span id="hDanger" class="c-teal dangerTxt">▯▯▯ 0.0</span>
+            <button id="hBrainDl" class="ghost tinyBtn" title="Download this generation's sealed decision log">⤓ log</button></div>
+          <div class="nchain">signals → judgment layer → behavior</div>
+        </div></div>
+      <div id="hTraits" class="traitRow"></div>
+    </div>
+
+    <div id="hLog" class="log"></div>
+    <button id="hPause" class="iconBtn" title="Pause / menu">⏸</button>
+
+    <!-- touch controls -->
+    <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
+    <button id="gfBtn">GF<br>ESCAPE</button>
+  </div>
+
+  <!-- ============ MENU overlay ============ -->
+  <div id="menu" class="overlay show">
+    <div class="panel">
+      <div class="title">Fruit Fly<span> World</span></div>
+      <div class="subtitle">Fruit-fly lineage · biological survival game</div>
+      <div id="mLineage" class="lineageStats"></div>
+      <p class="howto">
+        You are a <b>lineage</b>, not a single fly. Gather food and energy → lay eggs automatically;
+        the <b class="c-lav">predator</b> commits to a ballistic strike. When the GF reflex lights up READY,
+        press <span class="kbd">Space</span> to jump clear. Your offspring inherit mutations across generations.
+      </p>
+      <p class="howto small">
+        Mobile: hold and drag anywhere to steer; tap the <b class="c-teal">GF button</b> when it lights up.<br>
+        There is no one-time victory: build the lineage, outproduce the wild type, and improve your record.
+      </p>
+      <p class="howto small">
+        Food has three risk levels: <b class="c-food">sugar +12</b> (safe) · <b class="c-gold">yeast +26</b>
+        (on the rim, predator risk) · <b class="c-lav">rot +38</b> (odor exposed for 6 seconds, attracting the predator).
+      </p>
+      <div class="howto small guideBox">
+        <b>Quick guide</b><br>
+        Move toward food to restore energy. High energy lays eggs automatically, so balance feeding with escape timing.<br>
+        Each generation lasts up to <b>50 seconds</b>. It ends when your energy reaches zero, the predator kills you, or you survive the full 50 seconds.<br>
+        At the end, compare your eggs with the wild type, choose one mutation in the Mutation Draft, and continue into the next generation. Death ends a generation, not the lineage.
+      </div>
+      <p class="howto small"><a href="https://fruitfly.world">← Back to fruitfly.world</a> · <a href="?bench=1&seed=42&brain=circuit&gens=2">▶ Determinism exam</a> (same seed, same brain, run twice — must be identical)</p>
+      <div class="brainCard">
+        <h3>Choose your fly's brain</h3>
+        <p class="tiny">Same world, same rules, same scoring. The brain only decides where to go —
+        the GF brainstem still owns the escape jump.</p>
+        <div class="row brainRow">
+          <button class="small brainBtn" data-brain="manual">MANUAL<s>You drive · WASD</s></button>
+          <button class="small brainBtn" data-brain="genes">GENES<s>auto-pilot baseline</s></button>
+          <button class="small brainBtn" data-brain="circuit">CIRCUIT<s>FFW-CX/0.1 · 24 neurons</s></button>
+          <button class="small brainBtn" data-brain="judgment">JUDGMENT<s id="judgmentSub">local heuristic · free</s></button>
+        </div>
+        <div class="brainCfg">
+          <label for="jevKey">System One key</label>
+          <input id="jevKey" type="password" autocomplete="off" spellcheck="false"
+            placeholder="leave empty for the free local heuristic">
+          <span class="tiny">jev-1.13.0 via same-origin /api/jev proxy · key stored in this browser only · on failure the local heuristic takes over</span>
+        </div>
+      </div>
+      <div class="circCard">
+        <h3>Escape circuit · connectome-inspired</h3>
+        <p class="tiny">LC4 (angular velocity, 2,442 synapses) + LPLC2 (looming size, 1,366 synapses) → Giant Fiber.
+        Inspired by fruit-fly male brain connectome data (Ache et al. 2019 / MaleCNS v1.0; ~99.6% of GF visual input).</p>
+        <div class="row">
+          <button class="small circBtn active" data-conn="real">Real connectivity</button>
+          <button class="small circBtn" data-conn="shuffled">Shuffled connectivity</button>
+        </div>
+        <div class="row seedRow">
+          <input id="seedInput" type="number" min="1" value="1337"><button class="small" id="seedApply">Set seed</button>
+        </div>
+        <button class="small primary" id="expBtn">Run control experiment · real vs shuffled</button>
+        <div id="expResult" class="tiny expResult"></div>
+      </div>
+      <button id="mStart" class="bigBtn">Start first generation →</button>
+      <button id="mReset" class="tiny ghost">Clear lineage save</button>
+    </div>
+  </div>
+
+  <!-- ============ DRAFT overlay ============ -->
+  <div id="draft" class="overlay">
+    <div class="panel wide">
+      <div id="dTitle" class="dtitle">Generation 1 · Complete</div>
+      <div id="dVerdict" class="verdict win">Beat wild type 3 : 1</div>
+      <div id="dRep" class="drep"></div>
+      <div id="dsubtitle" class="dsubtitle">What will this generation leave behind? Choose one mutation for the next generation.</div>
+      <div id="dCards" class="cards"></div>
+      <div id="dRival" class="tiny rivalPick"></div>
+    </div>
+  </div>
+</div>
+
+<script src="./vendor/phaser.min.js"></script>
+<script>import("./js/main.js");</script>
+</body>
+</html>

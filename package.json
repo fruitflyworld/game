@@ -1,0 +1,16 @@
+{
+  "name": "@fruitflyworld/game",
+  "version": "0.2.0",
+  "description": "The fruitflyworld survival game — a fruit fly with a slot for a brain, in a dish that wants it dead. Plain ES modules + Phaser, no build step.",
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "start": "npx --yes serve ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fruitflyworld/game.git"
+  },
+  "license": "MIT",
+  "homepage": "https://fruitfly.world/play"
+}
