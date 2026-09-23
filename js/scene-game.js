@@ -7,13 +7,14 @@ import {
   GF, PRED_VISUAL, FOOD_TYPES, ODOR_TIME, TRAIT_INFO, NAMED_ONCE, STACKABLE, draftCards,
   clamp01, dist, normalize, rng, seedRng, randRange, randomInDish,
   recomputeStats, makeFly, resetFly,
-  GF_PARAMS, stepGF, fireGF
+  GF_PARAMS, stepGF, fireGF, makeGFState
 } from "./sim.js";
 import { createCircuitBrain } from "./brain-circuit.js";
 import { createLocalBrain } from "./brain-local.js";
 import { createJevBrain, JEV_MODEL_DEFAULT } from "./brain-jev.js";
 import { createBrainDriver } from "./brain-driver.js";
 import { tr } from "./ui.js";
+import { contentHash } from "./brain.js";
 import { sfx } from "./audio.js";
 
 const SAVE_KEY="flyline_v1";
@@ -112,7 +113,9 @@ export class GameScene extends Phaser.Scene {
       getDecisionLog:()=>({ version:"flyline-log/1", worldSeed:this.state.worldSeed,
         genNumber:this.state.genNumber, brain:{ id:this.playerBrainId,
         model:this.brainDriver?this.brainDriver.model:"player" }, records:this.brainLog.slice() }),
-      downloadDecisionLog:()=>this.downloadDecisionLog()
+      downloadDecisionLog:()=>this.downloadDecisionLog(),
+      autopilot:o=>this.autopilot(o),
+      importQuests:s=>this.importQuests(s)
     };
   }
 
@@ -781,11 +784,112 @@ export class GameScene extends Phaser.Scene {
       if(detail.eggs>=3) hit("FORAGER");
       if(detail.escapes>=3) hit("REFLEX");
       localStorage.setItem("flyline_quests_v1",JSON.stringify(store));
-    }catch(e){ /* private mode: the generation still ends normally */ }
+    }catch(e){ console.warn("[ffw] quest record failed:",e); /* private mode: the generation still ends normally */ }
+  }
+  // Quest bridge for agent runs: a headless autopilot run records its quest
+  // evidence in the browser it ran in. The agent hands the JSON to the
+  // operator, who opens one URL (or calls this via FlyLabAPI) to take the
+  // evidence into their own browser. Entries are merged verbatim — the server
+  // re-validates every field at claim time (verifyDishEvidence), so this is
+  // the same client-attested trust level as playing by hand (v1).
+  importQuests(store){
+    const cur=(()=>{ try{ return JSON.parse(localStorage.getItem("flyline_quests_v1")||"{}"); }catch(e){ return {}; } })();
+    if(!store||typeof store!=="object") return {imported:0,total:Object.keys(cur).length};
+    let n=0;
+    for(const k of ["SURVIVOR","FORAGER","REFLEX","EXAMINED"]){
+      const e=store[k];
+      if(!e||typeof e!=="object"||e.quest!==k||cur[k]) continue;
+      cur[k]=e; n++;
+      this.uiLog(tr(`🏅 DISH quest complete: ${k} — claim your free mint on the Passport page.`,`🏅 任务完成:${k} —— 到首页护照区领取免费铸造。`));
+      document.dispatchEvent(new CustomEvent("flyline:quest",{detail:{quest:k}}));
+    }
+    if(n>0){ try{ localStorage.setItem("flyline_quests_v1",JSON.stringify(cur)); }catch(err){} }
+    return {imported:n,total:Object.keys(cur).length};
+  }
+  // ---- agent autopilot: fly the dish end to end without a human ----
+  // One deterministic run at a fixed 60 Hz (same discipline as the exam room),
+  // but single-run and quest-recording: at every generation boundary the
+  // policy is asked one draft question — which mutation does the next fly
+  // inherit? — and the sealed log plus DISH quest evidence land in localStorage
+  // exactly as a human run would. The policy is the exam.
+  async autopilot(opts={}){
+    const seed=(opts.seed||this.state.worldSeed||42)>>>0;
+    const brain=["circuit","judgment","genes","manual"].includes(opts.brain)?opts.brain:"circuit";
+    const gens=Math.max(1,Math.min(8,opts.gens||3));
+    const policy=typeof opts.policy==="function"?opts.policy:null;
+    // deterministic default policy: economy first (survive → convert → endure),
+    // then whatever the dish offers. A real agent replaces this with judgment.
+    const PREF=["forager","fecund","hardy","thrift","nocturnal","white","curly","swift"];
+    const savedState=JSON.parse(JSON.stringify(this.state));
+    const wasBench=this.__bench;
+    const quests0=(()=>{ try{ return JSON.parse(localStorage.getItem("flyline_quests_v1")||"{}"); }catch(e){ return {}; } })();
+    this.__bench=true; // suppress draft UI, coach, replay — same as the exam room
+    try{ this.scene.pause(); }catch(e){ /* loop already stopped */ }
+    const DT=1000/60;
+    const out=[];
+    try{
+      this.state=JSON.parse(JSON.stringify(savedState));
+      this.state.worldSeed=seed; this.state.brainId=brain; this.state.genNumber=1;
+      this.state.ownedTraits=[]; this.state.lineageEggs=0; this.state.bestEggs=0; this.state.eggsHistory=[];
+      this.rivalFly.rivalTraits=[];
+      this.playerBrainId=brain; this.attachBrain(brain,{silent:true});
+      this.started=true;
+      this.visitedCells=new Set(); this.simTime=0; this.slowmoT=0; this.dangerFlash=0;
+      this.savedRivalSnapshot=null;
+      this.predator.target=null; this.predator.angle=0;
+      this.predator.lungeDir={x:0,y:0}; this.predator.legPhase=0;
+      this.agentVec=null; this.touchVec=null;
+      this.playerFly.gf=makeGFState(); this.rivalFly.gf=makeGFState();
+      this.escapesThisGen=0;
+      this.resetGenerationWorld();
+      for(let g=1;g<=gens;g++){
+        let frames=0;
+        while(!this.ended&&frames<GEN_DURATION*60+240){
+          this.update(frames*DT,DT); frames++;
+          await Promise.resolve();
+        }
+        const log=this.brainLog.slice();
+        const detail={ gen:g, eggs:this.playerFly.eggs, rivalEggs:this.rivalFly.eggs,
+          win:this.playerFly.eggs>=this.rivalFly.eggs,
+          alive:this.playerFly.alive,
+          deathReason:this.playerFly.alive?"time":(this.playerFly.deathReason||"predator"),
+          escapes:this.escapesThisGen||0, decisions:log.length,
+          brain:{ id:this.playerBrainId, model:this.brainDriver?this.brainDriver.model:"player",
+            decisions:log.length,
+            avgConfidence:log.length?log.reduce((a,r)=>a+r.confidence,0)/log.length:null } };
+        out.push({ gen:g, eggs:detail.eggs, rivalEggs:detail.rivalEggs,
+          survived:detail.alive, deathReason:detail.deathReason,
+          decisions:log.length, logHash:contentHash(log.map(r=>r.contentHash)) });
+        // quests record exactly as a human run (recordDishQuests skips __bench)
+        const b=this.__bench; this.__bench=false; this.recordDishQuests(detail); this.__bench=b;
+        if(g<gens){
+          const cards=draftCards(seed,this.state.genNumber,
+            this.playerFly.eggs,this.rivalFly.eggs,this.state.ownedTraits);
+          const q={ cards, state:{ gen:this.state.genNumber, eggs:this.playerFly.eggs,
+            rivalEggs:this.rivalFly.eggs, ownedTraits:this.state.ownedTraits.slice(),
+            lineageEggs:this.state.lineageEggs } };
+          document.dispatchEvent(new CustomEvent("flyline:draft",{detail:JSON.parse(JSON.stringify(q))}));
+          let pick=policy?policy(q.cards,q.state):null;
+          if(!cards.includes(pick)) pick=PREF.find(t=>cards.includes(t))||cards[0];
+          this.nextGen(pick);
+        }
+      }
+    } finally {
+      this.__bench=wasBench;
+      this.state=savedState;
+    }
+    // full evidence objects for the quests THIS run completed (headless agents
+    // hand them to the operator, who imports them with one URL — see importQuests)
+    let questsAll={}; try{ questsAll=JSON.parse(localStorage.getItem("flyline_quests_v1")||"{}"); }catch(e){}
+    const quests={}; for(const k in questsAll) if(!(k in quests0)) quests[k]=questsAll[k];
+    return { version:"flyline-autopilot/1", seed, brain, gens,
+      eggsTotal:out.reduce((a,g)=>a+g.eggs,0),
+      decisions:out.reduce((a,g)=>a+g.decisions,0),
+      policy:policy?"custom":"default-economy", gens:out,
+      quests, log:window.FlyLabAPI.getDecisionLog() };
   }
   nextGen(traitId){
-    this.state.ownedTraits.push(traitId);
-    this.uiLog(tr(`🧬 Generation ${this.state.genNumber+1} inherits mutation: ${traitId}`,`🧬 第 ${this.state.genNumber+1} 代继承突变:${TRAIT_INFO[traitId]?TRAIT_INFO[traitId].name.split(" ")[0]:traitId}`));
+    this.state.ownedTraits.push(traitId);    this.uiLog(tr(`🧬 Generation ${this.state.genNumber+1} inherits mutation: ${traitId}`,`🧬 第 ${this.state.genNumber+1} 代继承突变:${TRAIT_INFO[traitId]?TRAIT_INFO[traitId].name.split(" ")[0]:traitId}`));
     this.state.genNumber+=1;
     this.resetGenerationWorld();
   }

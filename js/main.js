@@ -25,6 +25,16 @@ const checkReady=setInterval(()=>{
   if(scene&&scene.state&&!scene.__uiInited){
     scene.__uiInited=true; clearInterval(checkReady); initUI(scene);
     const qp=new URLSearchParams(location.search);
+    // agent hand-off: a headless autopilot run produces quest evidence the
+    // operator imports by opening one URL (built by public/skill/ffw-dish)
+    const imp=qp.get("import");
+    if(imp){
+      try{
+        const r=scene.importQuests(JSON.parse(imp));
+        console.log("[ffw] quest import:",JSON.stringify(r));
+      }catch(e){ console.warn("[ffw] quest import failed:",e); }
+      history.replaceState(null,"",location.pathname);
+    }
     if(qp.get("bench")==="1"){
       import("./bench.js").then(async m=>{
         let seed=+qp.get("seed")||42, beacon=null;
