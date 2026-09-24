@@ -807,16 +807,31 @@ export class GameScene extends Phaser.Scene {
     return {imported:n,total:Object.keys(cur).length};
   }
   // ---- agent autopilot: fly the dish end to end without a human ----
-  // One deterministic run at a fixed 60 Hz (same discipline as the exam room),
-  // but single-run and quest-recording: at every generation boundary the
+  // Deterministic brains run one fixed-60Hz run (same discipline as the exam
+  // room), single-run and quest-recording: at every generation boundary the
   // policy is asked one draft question — which mutation does the next fly
   // inherit? — and the sealed log plus DISH quest evidence land in localStorage
-  // exactly as a human run would. The policy is the exam.
+  // exactly as a human run would.
+  //
+  // Oracle mode (opts.oracle / opts.key) is the other lane: a REMOTE judgment
+  // model drives the behavior decisions live, once per second, through the
+  // same-origin /api/jev proxy. The loop paces to real time so the oracle can
+  // answer inside it. Receipt honesty: an API oracle cannot be re-run, so the
+  // result is sealed-but-not-replayable — oracle runs must never be presented
+  // as IDENTICAL or replayable. That lane is what "the model flies the fly"
+  // actually means.
   async autopilot(opts={}){
     const seed=(opts.seed||this.state.worldSeed||42)>>>0;
     const brain=["circuit","judgment","genes","manual"].includes(opts.brain)?opts.brain:"circuit";
     const gens=Math.max(1,Math.min(8,opts.gens||3));
     const policy=typeof opts.policy==="function"?opts.policy:null;
+    if(opts.key!==undefined&&opts.key!==null&&String(opts.key).trim())
+      localStorage.setItem("flyline_jev_key",String(opts.key).trim());
+    const oracleWanted=(opts.oracle===true)||(opts.key!==undefined&&opts.key!==null&&String(opts.key).trim()!=="");
+    if(oracleWanted&&brain!=="judgment")
+      throw new Error("oracle mode requires --brain judgment (a remote System One model drives the fly)");
+    if(oracleWanted&&!localStorage.getItem("flyline_jev_key"))
+      throw new Error("oracle mode needs a System One key (--key, or localStorage flyline_jev_key)");
     // deterministic default policy: economy first (survive → convert → endure),
     // then whatever the dish offers. A real agent replaces this with judgment.
     const PREF=["forager","fecund","hardy","thrift","nocturnal","white","curly","swift"];
@@ -827,6 +842,10 @@ export class GameScene extends Phaser.Scene {
     try{ this.scene.pause(); }catch(e){ /* loop already stopped */ }
     const DT=1000/60;
     const out=[];
+    // oracle = remote model driving. Checked live, not latched: if the remote
+    // brain fails mid-run the driver swaps to the local heuristic and pacing
+    // (and the final oracle label) must follow the truth, not the start state.
+    const oracleNow=()=>!!this.brainDriver&&!this.brainDriver.model.startsWith("local-heuristic");
     try{
       this.state=JSON.parse(JSON.stringify(savedState));
       this.state.worldSeed=seed; this.state.brainId=brain; this.state.genNumber=1;
@@ -845,8 +864,12 @@ export class GameScene extends Phaser.Scene {
       for(let g=1;g<=gens;g++){
         let frames=0;
         while(!this.ended&&frames<GEN_DURATION*60+240){
+          // oracle runs pace to wall time: the remote decision has to land
+          // inside the loop, and the driver's staleness window is sim time —
+          // at unthrottled speed every oracle answer would arrive "stale".
+          if(oracleNow()) await new Promise(r=>setTimeout(r,DT));
+          else await Promise.resolve();
           this.update(frames*DT,DT); frames++;
-          await Promise.resolve();
         }
         const log=this.brainLog.slice();
         const detail={ gen:g, eggs:this.playerFly.eggs, rivalEggs:this.rivalFly.eggs,
@@ -860,6 +883,7 @@ export class GameScene extends Phaser.Scene {
         out.push({ gen:g, eggs:detail.eggs, rivalEggs:detail.rivalEggs,
           survived:detail.alive, deathReason:detail.deathReason,
           decisions:log.length, logHash:contentHash(log.map(r=>r.contentHash)),
+          brainModel:detail.brain.model,
           log }); // full per-gen records: the deliverable is the whole chain, not the last generation
         // quests record exactly as a human run (recordDishQuests skips __bench)
         const b=this.__bench; this.__bench=false; this.recordDishQuests(detail); this.__bench=b;
@@ -883,10 +907,21 @@ export class GameScene extends Phaser.Scene {
     // hand them to the operator, who imports them with one URL — see importQuests)
     let questsAll={}; try{ questsAll=JSON.parse(localStorage.getItem("flyline_quests_v1")||"{}"); }catch(e){}
     const quests={}; for(const k in questsAll) if(!(k in quests0)) quests[k]=questsAll[k];
+    // label from what actually drove the fly, per generation — a run that fell
+    // back to the local heuristic partway is NOT an oracle run end to end
+    const oracleGens=out.filter(g=>!String(g.brainModel||"").startsWith("local-heuristic"));
+    const oracleLived=oracleGens.length>0;
+    const oracleModel=oracleLived?oracleGens[0].brainModel:null;
     return { version:"flyline-autopilot/1", seed, brain, gens,
       eggsTotal:out.reduce((a,g)=>a+g.eggs,0),
       decisions:out.reduce((a,g)=>a+g.decisions,0),
       policy:policy?"custom":"default-economy", gens:out,
+      oracle: oracleLived ? { live:true, model:oracleModel,
+        degraded:oracleGens.length<out.length
+          ?"the remote model failed mid-run and later generations ran the local heuristic":null,
+        note:"sealed, not replayable — an API model drove the fly; do not claim IDENTICAL" } :
+        { live:false },
+      replayable: !oracleLived,
       quests, log:window.FlyLabAPI.getDecisionLog() };
   }
   nextGen(traitId){
