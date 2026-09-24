@@ -32,9 +32,12 @@
 - Feel and rendering: this repo.
 - World rules and numbers: [fruitflyworld/sim](https://github.com/fruitflyworld/sim).
   Exam protocol: [fruitflyworld/bench](https://github.com/fruitflyworld/bench).
+  Those files are vendored — `vendor.lock.json` pins their fingerprints;
+  `node scripts/sync-vendor.mjs check` verifies, `pull` re-syncs from upstream.
+  Change them upstream, never here.
 - Changes here are synced into
   [fruitflyworld/fruit-fly-world](https://github.com/fruitflyworld/fruit-fly-world)
-  `public/play/`. Say so in the PR description.
+  `public/play/` by their `scripts/sync-vendor.mjs pull`. Say so in the PR description.
 
 ## Pull requests
 

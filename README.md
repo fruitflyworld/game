@@ -1,6 +1,7 @@
 <div align="center">
   <h1>fruitflyworld / game</h1>
   <p><strong>A fruit fly with a slot for a brain, in a dish that wants it dead.</strong></p>
+  <p><img src="media/gameplay.gif" alt="10 seconds of the survival game — a judgment-brain fly foraging while the predator stalks" width="560"></p>
   <p>
     <a href="https://fruitfly.world/play"><strong>▶ PLAY</strong></a> ·
     <a href="https://fruitfly.world/play?bench=1&seed=42&brain=judgment&gens=2">the exam room</a> ·

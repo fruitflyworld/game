@@ -16,4 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # js/{sim,gf-neuron,cx-circuit,brain*}.{js,d.ts} + bench.js are vendored from
+      # fruitflyworld/sim and /bench — fingerprints must match vendor.lock.json.
+      - run: node scripts/sync-vendor.mjs check
       - run: npm run check
