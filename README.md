@@ -3,7 +3,7 @@
   <p><strong>A fruit fly with a slot for a brain, in a dish that wants it dead.</strong></p>
   <p>
     <a href="https://fruitfly.world/play"><strong>▶ PLAY</strong></a> ·
-    <a href="https://fruitflyworld/play?bench=1&seed=42&brain=judgment&gens=2">the exam room</a> ·
+    <a href="https://fruitfly.world/play?bench=1&seed=42&brain=judgment&gens=2">the exam room</a> ·
     <a href="https://fruitfly.world/essay">the essay</a>
   </p>
   <p>
@@ -15,8 +15,9 @@
 
 ---
 
-**[Play it live at fruitfly.world/play](https://fruitfly.world/play)** — or run the exact same
-files from this repository locally (see below). No install, no account, no wallet.
+**[Play it live at fruitfly.world/play](https://fruitfly.world/play)** — or play this exact
+bundle on **[GitHub Pages](https://fruitflyworld.github.io/game)** — or run the same files
+from this repository locally (see below). No install, no account, no wallet.
 
 ## The game
 
@@ -38,11 +39,13 @@ fly. Death ends a generation, not the lineage.
 
 The escape reflex is not pluggable: underneath every brain sits the **LC4/LPLC2 → Giant
 Fiber** circuit — the command cell for the escape jump in the real fruit fly, here a leaky
-integrate-and-fire module. **The brain chooses; the brainstem jumps.** With real
-connectivity the fly escapes 100% of telegraphed lunges; with shuffled connectivity, 68%.
-That control experiment ships in the menu.
+integrate-and-fire module. **The brain chooses; the brainstem jumps.** In a simplified
+two-channel wiring check, the fly escapes 100% of telegraphed lunges with real connectivity
+and 68% with swapped connectivity — evidence that channel order matters in this circuit,
+not a result about the connectome. The check ships in the menu.
 
-Every decision from every brain is sealed with a content hash into a downloadable log.
+Every decision a deciding brain makes is sealed with a content hash into a downloadable log
+(the genes auto-pilot logs nothing — it makes no judgment calls).
 Press `?bench=1` for the [exam room](https://github.com/fruitflyworld/bench): the same
 `(seed, brain, generations)` run twice at a fixed 60 Hz — bit-identical runs print
 **IDENTICAL**; anything else is a bug report, not a score.
