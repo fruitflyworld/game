@@ -9,6 +9,8 @@
 // Synapse counts (Ache et al. 2019, FAFB): LC4 = 2442, LPLC2 = 1366. In this
 // playable model they are used only as relative weights between the two channels.
 //
+import { dexp } from "./dmath.js";
+
 // real connectivity: the big weight (LC4) rides VELOCITY, which leads angular
 // size on a looming strike → more escape lead time.
 // shuffled connectivity: weights swapped onto the wrong channels → big weight
@@ -37,7 +39,10 @@ export function senseLC4(vel){
   return clamp01(vel*GF_PARAMS.VEL_GAIN); // LC4 → angular velocity (leads)
 }
 export function senseLPLC2(size){
-  return (size>0.08?1:0)*Math.exp(-Math.pow(size-GF_PARAMS.SIZE_PEAK,2)/(2*GF_PARAMS.SIZE_WIDTH*GF_PARAMS.SIZE_WIDTH)); // LPLC2 → angular size (lags)
+  const d=size-GF_PARAMS.SIZE_PEAK; // LPLC2 → angular size (lags)
+  // dexp (dmath.js): Math.exp is not cross-platform bit-stable — the escape
+  // circuit feeds the deterministic lane, so it must use the fixed kernel.
+  return (size>0.08?1:0)*dexp(-d*d/(2*GF_PARAMS.SIZE_WIDTH*GF_PARAMS.SIZE_WIDTH));
 }
 export function gfChannels(size, vel){
   return { lc4:senseLC4(vel), lplc2:senseLPLC2(size) };

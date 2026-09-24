@@ -9,6 +9,9 @@ import {
   recomputeStats, makeFly, resetFly,
   GF_PARAMS, stepGF, fireGF, makeGFState
 } from "./sim.js";
+// dish/3: sim-lane trig/atan go through the deterministic kernels so arm64
+// Chrome and x64 Node produce bit-identical worlds (see js/dmath.js).
+import { dcos, dsin, datan } from "./dmath.js";
 import { createCircuitBrain } from "./brain-circuit.js";
 import { createLocalBrain } from "./brain-local.js";
 import { createJevBrain, JEV_MODEL_DEFAULT } from "./brain-jev.js";
@@ -208,7 +211,7 @@ export class GameScene extends Phaser.Scene {
     if(beh==="avoid"){ const th=this.findThreat(fly); if(th) return th.dirAway; }
     if(beh==="approach"){ const f=this.findNearestFood(fly); if(f) return f.dir; }
     fly.wanderAngle+=(rng()-0.5)*0.5;
-    return normalize({x:Math.cos(fly.wanderAngle),y:Math.sin(fly.wanderAngle)});
+    return normalize({x:dcos(fly.wanderAngle),y:dsin(fly.wanderAngle)});
   }
   updateBrain(dt){
     if(!this.brainDriver) return;
@@ -336,7 +339,7 @@ export class GameScene extends Phaser.Scene {
     this.food=[];
     const nSugar=Math.max(4,FOOD_COUNT-Math.floor((gen-1)/2)), nYeast=2+Math.floor(gen/4), nRot=2+Math.floor(gen/5);
     for(let i=0;i<nSugar;i++){ const p=randomInDish(0.85); this.food.push({x:p.x,y:p.y,type:"sugar"}); }
-    for(let i=0;i<nYeast;i++){ const a=rng()*Math.PI*2, r=0.72+rng()*0.2; this.food.push({x:Math.cos(a)*r,y:Math.sin(a)*r,type:"yeast"}); }
+    for(let i=0;i<nYeast;i++){ const a=rng()*Math.PI*2, r=0.72+rng()*0.2; this.food.push({x:dcos(a)*r,y:dsin(a)*r,type:"yeast"}); }
     for(let i=0;i<nRot;i++){ const p=randomInDish(0.85); this.food.push({x:p.x,y:p.y,type:"rot"}); }
 
     this.eggsGroup.clear(true,true);
@@ -384,7 +387,7 @@ export class GameScene extends Phaser.Scene {
   relocateFood(item, fly){
     if(fly.stats.sitter){ return; }
     const roverFactor=fly.stats.rover?0.15:0;
-    if(item.type==="yeast"){ const a=rng()*Math.PI*2, rr=0.72+rng()*0.2+roverFactor; item.x=Math.cos(a)*Math.min(0.94,rr); item.y=Math.sin(a)*Math.min(0.94,rr); }
+    if(item.type==="yeast"){ const a=rng()*Math.PI*2, rr=0.72+rng()*0.2+roverFactor; item.x=dcos(a)*Math.min(0.94,rr); item.y=dsin(a)*Math.min(0.94,rr); }
     else { const p=randomInDish(Math.min(0.94,0.85+roverFactor)); item.x=p.x; item.y=p.y; }
     const i=this.food.indexOf(item); const spr=this.foodSprites[i]; const p=this.toPx(item.x,item.y);
     spr.setPosition(p.x,p.y);
@@ -421,7 +424,7 @@ export class GameScene extends Phaser.Scene {
   }
   lightPos(){
     const a=this.genElapsed/CYCLE_SEC*Math.PI*2;
-    return {x:Math.cos(a)*0.5, y:Math.sin(a)*0.5};
+    return {x:dcos(a)*0.5, y:dsin(a)*0.5};
   }
   cellKeyOf(p){
     const i=Math.min(GRID_N-1,Math.max(0,Math.floor((p.x+1)/2*GRID_N)));
@@ -438,7 +441,7 @@ export class GameScene extends Phaser.Scene {
     const l=this.lightSignal(fly);
     if(l.signal>0){ s.x+=l.dir.x*fly.genes.light*l.signal; s.y+=l.dir.y*fly.genes.light*l.signal; }
     fly.wanderAngle+=(rng()-0.5)*0.5;
-    s.x+=Math.cos(fly.wanderAngle)*0.12; s.y+=Math.sin(fly.wanderAngle)*0.12;
+    s.x+=dcos(fly.wanderAngle)*0.12; s.y+=dsin(fly.wanderAngle)*0.12;
     return normalize(s);
   }
   getSteer(fly){
@@ -471,7 +474,7 @@ export class GameScene extends Phaser.Scene {
     let size=0,vel=0;
     if(this.predator.alive){
       const d=Math.max(0.02,dist(fly,this.predator));
-      const theta=2*Math.atan(GF.PRED_ANG_R/d);
+      const theta=2*datan(GF.PRED_ANG_R/d);
       vel=Math.max(0,(theta-g.prevTheta)/Math.max(dt,1e-3));
       g.prevTheta=theta;
       if(d<=PRED_VISUAL){ size=theta; }
@@ -562,8 +565,8 @@ export class GameScene extends Phaser.Scene {
     if(!(fly.isPlayer&&this.driveMode==="manual")&&fly.gf.armed) this.tryDash(fly);
     const steerRaw=this.getSteer(fly);
     const steer=fly.stats.adh&&fly.boostT>0?normalize({
-      x:steerRaw.x*fly.stats.speedTurn+Math.cos(fly.angle)*(1-fly.stats.speedTurn),
-      y:steerRaw.y*fly.stats.speedTurn+Math.sin(fly.angle)*(1-fly.stats.speedTurn)
+      x:steerRaw.x*fly.stats.speedTurn+dcos(fly.angle)*(1-fly.stats.speedTurn),
+      y:steerRaw.y*fly.stats.speedTurn+dsin(fly.angle)*(1-fly.stats.speedTurn)
     }):steerRaw;
     const inDiapause=fly.stats.diapause&&fly.energy<30;
     const diapauseSlow=inDiapause?0.6:1;
@@ -944,7 +947,7 @@ export class GameScene extends Phaser.Scene {
     if(this.running&&!this.ended&&this.started){
       const dt=dtReal*dtScale;
       this.simTime+=dt; this.genElapsed+=dt;
-      this.nightFactor=(1-Math.cos(2*Math.PI*this.genElapsed/CYCLE_SEC))/2;
+      this.nightFactor=(1-dcos(2*Math.PI*this.genElapsed/CYCLE_SEC))/2;
       this.updateFly(this.playerFly,dt);
       this.updateFly(this.rivalFly,dt);
       this.updatePredator(dt);

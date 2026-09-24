@@ -10,6 +10,8 @@
 //   hunger 18 NPF · escape 19 GF(DNp01)
 //   behavior 20 DN_approach · 21 DN_avoid · 22 DN_explore · 23 DN_freeze
 
+import { dexp } from "./dmath.js";
+
 export const CX_MODEL_VERSION = "FFW-CX/0.1";
 
 // mulberry32: the only random source, consumed at construction time only.
@@ -25,7 +27,7 @@ function mulberry32(seed) {
 }
 
 const TAU_SYN = 4; // synaptic current decay (ticks): temporally close spikes sum
-const SYN_DECAY = Math.exp(-1 / TAU_SYN);
+const SYN_DECAY = dexp(-1 / TAU_SYN);
 const REFRACTORY_TICKS = 2;
 
 function makeNeuron(name, thresh, tau) {
@@ -169,7 +171,7 @@ export function createCircuit(opts) {
       confidence = 0.95;
     } else {
       const max = Math.max(...keys.map((k) => evidence[k]));
-      exps = keys.map((k) => Math.exp((evidence[k] - max) / 0.15));
+      exps = keys.map((k) => dexp((evidence[k] - max) / 0.15));
       sum = exps.reduce((a, b) => a + b, 0);
       behavior = keys[exps.indexOf(Math.max(...exps))];
       confidence = Math.max(...exps) / sum;

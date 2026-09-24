@@ -7,6 +7,7 @@
 // Plain ESM, no build step, browser + node. Types: brain-local.d.ts.
 
 import { BEHAVIORS, normalizeState, sealRecord, clamp01 } from "./brain.js";
+import { dexp } from "./dmath.js";
 
 export const LOCAL_MODEL_VERSION = "local-heuristic/0.1";
 
@@ -33,7 +34,7 @@ export function buildLocalDecision(state) {
   };
   const keys = BEHAVIORS;
   const max = Math.max(...keys.map((k) => raw[k]));
-  const exps = keys.map((k) => Math.exp((raw[k] - max) / 0.42));
+  const exps = keys.map((k) => dexp((raw[k] - max) / 0.42));
   const sum = exps.reduce((a, b) => a + b, 0);
   const distribution = {};
   keys.forEach((k, i) => { distribution[k] = exps[i] / sum; });
