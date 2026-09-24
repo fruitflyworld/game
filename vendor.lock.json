@@ -1,0 +1,37 @@
+{
+  "_comment": "vendored upstreams — run scripts/sync-vendor.mjs check|pull. Never edit these copies; change them upstream.",
+  "sources": {
+    "sim": {
+      "repo": "fruitflyworld/sim",
+      "dirEnv": "FFW_SIM_DIR",
+      "rev": "5da2ac554b595b65f030f8bf04740d052d089fb1",
+      "files": {
+        "js/sim.js": "sha256:6eac13a066c2d66475bb6cdf1cd3f3911352aa1c2fee6b2649876eba52dd0203",
+        "js/sim.d.ts": "sha256:869c83e01b8e7577d75d50e48eaa8199541f8f3a9e03a57875b561904fbd11b4",
+        "js/gf-neuron.js": "sha256:d007d789068c2f140860728b5e00b3e8e24b340d3d5cb8e144f3319656ba807c",
+        "js/gf-neuron.d.ts": "sha256:9c04f9a04d40dad6b9eb17707e91130460c1743e004e9bf553e320543fb023db",
+        "js/cx-circuit.js": "sha256:a797a85ac3af942f601ef0e657e6093f59ed103a3892e8f65018e3b301c2ea42",
+        "js/cx-circuit.d.ts": "sha256:5a2daa3cecf936ed632856a037d0bf6e7545353cb0779f13c81b82b8cede7948",
+        "js/brain.js": "sha256:905d5bdffec19ff987183364fd006049848d9c5f98d166d327add8c24ab592e2",
+        "js/brain.d.ts": "sha256:fd204c4a46ca0766d9e722c5594e5cf48da0ef7e6aa3cd5b7f45125bb9628717",
+        "js/brain-circuit.js": "sha256:813f6778378d4b4385143db1c0bd12546fd5bfb10d2e9c25265afb4dd79d39a5",
+        "js/brain-circuit.d.ts": "sha256:4db1def8a8991c7bba7747343bdf56cadf785fd8e6ab035f65584d6ee1babd2a",
+        "js/brain-local.js": "sha256:bc0ec916fa2777491c1642d159e00a5c4cf1c594939c23f9d4a764dddfe9962c",
+        "js/brain-local.d.ts": "sha256:b13a6cf049e4145941e3ad7b698873a6039dfeb0c4510826212fdf6fed3b4205",
+        "js/brain-jev.js": "sha256:ce59fd04d40a72e972ce213cfc2afdc3cd4716d5a8aa0cba836c5633a1ee0824",
+        "js/brain-jev.d.ts": "sha256:fb9f978bbfa104ef59f38369d4aadb09950e6e9830f2ba7b3a37849e021ae8f0",
+        "js/brain-driver.js": "sha256:4fb311de98c0cbed16325dede9c30ff747bef8575d311c7d00013f7eb50d64e7",
+        "js/brain-driver.d.ts": "sha256:2814c71ad03448246515c065e4da9e0282e388744c8f866da26aa9b5da941016"
+      }
+    },
+    "bench": {
+      "repo": "fruitflyworld/bench",
+      "dirEnv": "FFW_BENCH_DIR",
+      "rev": "8f1452cd978d029e1ae1523b8bcf0269f8159c6b",
+      "files": {
+        "js/bench.js": "sha256:32867774e92f66120025b99a3243cab37a6f5cf386bc04dbf8d62e1d8b31dcfa",
+        "js/bench.d.ts": "sha256:435decd3a2cdb530d32789416afe6bcabcf729987c5c90e224ee901390c58e3a"
+      }
+    }
+  }
+}
