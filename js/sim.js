@@ -198,6 +198,18 @@ export function draftSeed(worldSeed, gen, eggs, rivalEggs){
   // mix the run's outcome into the draft: your cards depend on how you got here
   return (worldSeed ^ Math.imul(gen,2654435761) ^ Math.imul(eggs,97) ^ Math.imul(rivalEggs,31))>>>0;
 }
+// The wild-type rival's gene weights, as a pure function of the world seed.
+// Same draw order and ranges as GameScene.create() originally rolled from the
+// shared stream (food .4-.9, threat .4-.9, light 0-.5, novelty .1-.6, forage
+// .3-.8), on a private stream: for a given seed the values are bit-identical
+// to what the old create()-time roll produced on a fresh profile. Determinism
+// fix (dish/2): the browser used to roll rival genes ONCE from the page-load
+// world seed and never re-roll them on seed changes (autopilot, bench,
+// setSeed), so the "same" run depended on the visitor's localStorage.
+export function rollRivalGenes(seed){
+  const r=makeRng(seed);
+  return { food:.4+r()*.5, threat:.4+r()*.5, light:r()*.5, novelty:.1+r()*.5, forage:.3+r()*.5 };
+}
 export function draftCards(worldSeed, gen, eggs, rivalEggs, owned){
   const r=makeRng(draftSeed(worldSeed,gen,eggs,rivalEggs));
   const ownedSet=new Set(owned||[]);

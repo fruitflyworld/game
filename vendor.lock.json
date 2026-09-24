@@ -6,8 +6,8 @@
       "dirEnv": "FFW_SIM_DIR",
       "rev": "5da2ac554b595b65f030f8bf04740d052d089fb1",
       "files": {
-        "js/sim.js": "sha256:6eac13a066c2d66475bb6cdf1cd3f3911352aa1c2fee6b2649876eba52dd0203",
-        "js/sim.d.ts": "sha256:869c83e01b8e7577d75d50e48eaa8199541f8f3a9e03a57875b561904fbd11b4",
+        "js/sim.js": "sha256:d35d466d6b1f6dc3204551a24e5b617b17ad59fb7b6c49f25a42f48828fe70de",
+        "js/sim.d.ts": "sha256:7f3a462216e4a1ebd269a75ee225372584db90693b8d5eaac59c7625e596d92e",
         "js/gf-neuron.js": "sha256:d007d789068c2f140860728b5e00b3e8e24b340d3d5cb8e144f3319656ba807c",
         "js/gf-neuron.d.ts": "sha256:9c04f9a04d40dad6b9eb17707e91130460c1743e004e9bf553e320543fb023db",
         "js/cx-circuit.js": "sha256:a797a85ac3af942f601ef0e657e6093f59ed103a3892e8f65018e3b301c2ea42",
@@ -27,7 +27,7 @@
     "bench": {
       "repo": "fruitflyworld/bench",
       "dirEnv": "FFW_BENCH_DIR",
-      "rev": "8f1452cd978d029e1ae1523b8bcf0269f8159c6b",
+      "rev": "8a2e39a59cd27d4510994e1438aa041d8dc78c77",
       "files": {
         "js/bench.js": "sha256:32867774e92f66120025b99a3243cab37a6f5cf386bc04dbf8d62e1d8b31dcfa",
         "js/bench.d.ts": "sha256:435decd3a2cdb530d32789416afe6bcabcf729987c5c90e224ee901390c58e3a"

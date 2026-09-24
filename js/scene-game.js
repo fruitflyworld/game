@@ -5,7 +5,7 @@ import {
   LAY_THRESHOLD, LAY_COST, LAY_CD, DASH_SPEED, DASH_TIME, DASH_CD, DASH_COST,
   PRED_BASE, PRED_LUNGE, PRED_LUNGE_RANGE, PRED_CATCH, PRED_DPS,
   GF, PRED_VISUAL, FOOD_TYPES, ODOR_TIME, TRAIT_INFO, NAMED_ONCE, STACKABLE, draftCards,
-  clamp01, dist, normalize, rng, seedRng, randRange, randomInDish,
+  clamp01, dist, normalize, rng, seedRng, randomInDish, rollRivalGenes,
   recomputeStats, makeFly, resetFly,
   GF_PARAMS, stepGF, fireGF, makeGFState
 } from "./sim.js";
@@ -46,7 +46,7 @@ export class GameScene extends Phaser.Scene {
 
     this.playerFly=makeFly(true, {food:.6,threat:.7,light:.3,novelty:.4,forage:.5});
     this.playerFly.traits=this.state.ownedTraits;
-    this.rivalFly=makeFly(false, {food:randRangeUse(.4,.9),threat:randRangeUse(.4,.9),light:randRangeUse(0,.5),novelty:randRangeUse(.1,.6),forage:randRangeUse(.3,.8)});
+    this.rivalFly=makeFly(false, rollRivalGenes(this.state.worldSeed));
     this.rivalFly.rivalTraits=this.state.rivalTraits;
     this.flies=[this.playerFly,this.rivalFly];
 
@@ -348,6 +348,10 @@ export class GameScene extends Phaser.Scene {
     this.playerFly.traits=this.state.ownedTraits;
     resetFly(this.playerFly,{x:0,y:0});
     this.playerFly.deathReason="";
+    // determinism fix (dish/2): the wild type's genes are a pure function of
+    // the world seed — re-derived here so autopilot/bench/setSeed runs stop
+    // depending on genes rolled at page-load time from the visitor's save.
+    this.rivalFly.genes=rollRivalGenes(this.state.worldSeed);
     // rival arms race: restores saved build, drafts ONE mutation per gen (deterministic)
     if(this.savedRivalSnapshot){ this.rivalFly.rivalTraits=this.savedRivalSnapshot.slice(); this.savedRivalSnapshot=null; }
     const poolR=NAMED_ONCE.concat(STACKABLE).filter(t=>STACKABLE.includes(t)||!this.rivalFly.rivalTraits.includes(t));
@@ -1067,5 +1071,4 @@ export class GameScene extends Phaser.Scene {
   setConnectivity(mode){ this.state.connectivityMode=mode; this.saveState(); }
   setSeed(v){ this.state.worldSeed=v>>>0; this.saveState(); this.resetGenerationWorld(); }
 }
-function randRangeUse(a,b){ return randRange(a,b); }
 function rngUse(){ return Math.random(); }

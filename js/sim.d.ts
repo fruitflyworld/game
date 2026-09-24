@@ -49,6 +49,7 @@ export declare const NAMED_ONCE: string[];
 export declare function makeRng(seed: number): () => number;
 export declare function draftSeed(worldSeed: number, gen: number, eggs: number, rivalEggs: number): number;
 export declare function draftCards(worldSeed: number, gen: number, eggs: number, rivalEggs: number, owned: string[]): string[];
+export declare function rollRivalGenes(seed: number): FlyGenes;
 export declare function makeFly(isPlayer: boolean, genes: FlyGenes): Fly;
 export declare function simEscapeTrial(mode: string, seed: number): EscapeTrialResult;
 export declare function runExperiment(worldSeed: number): ExperimentResult;
