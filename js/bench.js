@@ -204,7 +204,7 @@ export function renderBenchReport(r, beacon) {
       ? "IDENTICAL — same seed, same brain, same paper. Every decision hash and every outcome matched."
       : "DIVERGED — the two runs disagreed. This is a bug report, not a score."}</div>` +
     `<div class="benchMeta">seed ${r.seed}${beacon
-      ? ` · <a href="https://sepolia.etherscan.io/block/${beacon.blockNumber}" target="_blank" rel="noreferrer">Sepolia block ${beacon.blockNumber}</a> — nobody picked this seed, not even us`
+      ? ` · <a href="https://sepolia.etherscan.io/block/${beacon.blockNumber}" target="_blank" rel="noreferrer">Sepolia block ${beacon.blockNumber}</a> — seed derived in public view (a fresh block every ~12 s: single runs are samples, not picks)`
       : ""} · brain ${r.brain} · ${r.gens} generation${r.gens > 1 ? "s" : ""} ×2 runs · ` +
     `${r.decisions} sealed decisions · ${r.elapsedMs} ms ` +
     `<button type="button" class="benchCopy" id="benchCopyBtn">COPY RESULT AS CHALLENGE</button></div>` +
@@ -216,7 +216,7 @@ export function renderBenchReport(r, beacon) {
     `<tbody>${brows}</tbody></table>` +
     `<div class="benchFoot">Don't exam the model. Starve it. — try <a href="?bench=1&seed=42&brain=judgment&gens=2">seed 42 · judgment</a> · ` +
     `<a href="?bench=1&seed=1337&brain=circuit&gens=2">seed 1337 · circuit</a> · ` +
-    `<a href="?bench=1&seed=beacon&brain=${r.brain}&gens=${r.gens}">a seed nobody picked (block beacon)</a> · <a href="/play">← back to the dish</a></div>`;
+    `<a href="?bench=1&seed=beacon&brain=${r.brain}&gens=${r.gens}">a seed from the block beacon</a> · <a href="/play">← back to the dish</a></div>`;
   document.getElementById("gameWrap").appendChild(el);
   const btn = document.getElementById("benchCopyBtn");
   btn.addEventListener("click", () => {

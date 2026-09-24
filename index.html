@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Fruit Fly World · Fruit-fly lineage survival game</title>
-<link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="/play/style.css">
 </head>
 <body>
 <div id="languageControl" aria-label="Language">
@@ -90,7 +90,7 @@
         Each generation lasts up to <b>50 seconds</b>. It ends when your energy reaches zero, the predator kills you, or you survive the full 50 seconds.<br>
         At the end, compare your eggs with the wild type, choose one mutation in the Mutation Draft, and continue into the next generation. Death ends a generation, not the lineage.
       </div>
-      <p class="howto small"><a href="https://fruitfly.world">← Back to fruitfly.world</a> · <a href="?bench=1&seed=42&brain=circuit&gens=2">▶ Determinism exam</a> (same seed, same brain, run twice — must be identical)</p>
+      <p class="howto small"><a href="/">← Back to fruitfly.world</a> · <a href="?bench=1&seed=42&brain=circuit&gens=2">▶ Determinism exam</a> (same seed, same brain, run twice — must be identical)</p>
       <div class="brainCard">
         <h3>Choose your fly's brain</h3>
         <p class="tiny">Same world, same rules, same scoring. The brain only decides where to go —
@@ -114,12 +114,12 @@
         Inspired by fruit-fly male brain connectome data (Ache et al. 2019 / MaleCNS v1.0; ~99.6% of GF visual input).</p>
         <div class="row">
           <button class="small circBtn active" data-conn="real">Real connectivity</button>
-          <button class="small circBtn" data-conn="shuffled">Shuffled connectivity</button>
+          <button class="small circBtn" data-conn="shuffled">Swapped connectivity</button>
         </div>
         <div class="row seedRow">
           <input id="seedInput" type="number" min="1" value="1337"><button class="small" id="seedApply">Set seed</button>
         </div>
-        <button class="small primary" id="expBtn">Run control experiment · real vs shuffled</button>
+        <button class="small primary" id="expBtn">Run wiring check · real vs swapped</button>
         <div id="expResult" class="tiny expResult"></div>
       </div>
       <button id="mStart" class="bigBtn">Start first generation →</button>
@@ -140,7 +140,7 @@
   </div>
 </div>
 
-<script src="./vendor/phaser.min.js"></script>
-<script>import("./js/main.js");</script>
+<script src="/play/vendor/phaser.min.js"></script>
+<script>import("/play/js/main.js");</script>
 </body>
 </html>
