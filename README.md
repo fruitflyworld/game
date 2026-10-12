@@ -3,8 +3,7 @@
   <p><strong>A fruit fly with a slot for a brain, in a dish that wants it dead.</strong></p>
   <p><img src="media/gameplay.gif" alt="10 seconds of the survival game — a judgment-brain fly foraging while the predator stalks" width="560"></p>
   <p>
-    <a href="https://fruitfly.world/play"><strong>▶ PLAY</strong></a> ·
-    <a href="https://fruitfly.world/play?bench=1&seed=42&brain=judgment&gens=2">the exam room</a> ·
+    <a href="https://fruitfly.world/fly/dusty"><strong>▶ THE LIVE PRODUCT</strong></a> ·
     <a href="https://fruitfly.world/essay">the essay</a>
   </p>
   <p>
@@ -13,6 +12,8 @@
     <img src="https://img.shields.io/badge/build%20step-none-10b981" alt="no build step">
   </p>
 </div>
+
+> **Parked.** The live product is the trading fly: [fruitfly.world](https://fruitfly.world). This game stays open source and runs as-is.
 
 ---
 
