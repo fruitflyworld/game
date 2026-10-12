@@ -30,37 +30,37 @@ export const GF = { ...GF_PARAMS, PRED_ANG_R: 0.11 };
 export const PRED_VISUAL = 0.8;
 
 export const FOOD_TYPES = {
-  sugar: { gain: 12, color: "food",     label: "糖" },
-  yeast: { gain: 26, color: "gold",     label: "酵母" },
-  rot:   { gain: 38, color: "lavender", label: "腐物" }
+  sugar: { gain: 12, color: "food",     label: "Sugar" },
+  yeast: { gain: 26, color: "gold",     label: "Yeast" },
+  rot:   { gain: 38, color: "lavender", label: "Rot" }
 };
 export const ODOR_TIME = 6;
 
 export const TRAIT_INFO = {
-  white:{name:"白眼 white", good:"感知范围 +25%", bad:"夜晚感知惩罚 ×2(白眼=夜视觉差)", eye:"#e8e2d0", src:"white 基因 · Morgan 1910(第一个遗传学突变)"},
-  curly:{name:"卷翅 curly", good:"速度 +18%", bad:"代谢 +15%", src:"curly 翅形突变系"},
-  vestigial:{name:"残翅 vestigial", good:"能量上限 +60,代谢 -10%", bad:"GF 起跳距离 -40%(残翅飞不起来)", syn:"配 巨型 giant = 坦克血统(站得住,跑不快)", src:"vestigial 残翅突变系"},
-  ebony:{name:"黑檀 ebony", good:"捕食伤害 -30%", bad:"感知 -12%", body:"#3a3630", src:"ebony 体色突变系"},
-  fecund:{name:"多产 fecund", good:"产卵消耗 -22%", bad:"产卵后气味暴露 2s", syn:"配 贪食 forager = 产卵引擎", src:"繁殖力性状"},
-  swift:{name:"疾速 swift", good:"冲刺冷却 -30%", bad:"冲刺消耗 +40%", syn:"配 热颤 shaker = 连锁逃逸", src:"飞翔速度性状"},
-  hardy:{name:"耐饥 hardy", good:"代谢 -16%", bad:"速度 -8%", src:"饥饿耐受性状"},
-  nocturnal:{name:"夜视 nocturnal", good:"夜晚不再降感知", bad:"", syn:"配 虎纹 tiger = 夜间觅食;配 生物钟 clock = 昼夜双修", src:"昼夜活动多态性"},
-  shaker:{name:"热颤 shaker", good:"GF 逃逸后 1.5s 内速度 +40%", bad:"", syn:"配 疾速 swift:逃逸后开溜", src:"shaker 震颤突变系(K+ 通道)"},
-  forager:{name:"贪食 forager", good:"食物能量 +35%(可叠加)", bad:"进食后 1s 速度 -18%", syn:"配 多产 fecund:产卵引擎", src:"foraging 基因(漫游/安居位点)"},
-  thrift:{name:"节俭 thrift", good:"吃腐物不再暴露气味", bad:"", syn:"解锁腐物农场:腐物+38 白吃;配 酒量 adh 双保险", src:"腐食耐受策略"},
-  tiger:{name:"虎纹 tiger", good:"被咬时击退并震慑捕食者(冷却 8s)", bad:"", syn:"配 夜视:夜里抢腐物", src:"警戒色/反捕食行为"},
-  giant:{name:"巨型 giant", good:"能量上限 +60,GF 反射更易触发", bad:"速度 -15%", syn:"配 耐饥 hardy:坦克血统", src:"体型性状"},
-  rover:{name:"漫游 rover", good:"速度 +10%,食物感知 +20%", bad:"代谢 +12%,吃完的食物弹得更远", syn:"与 安居 sitter 互斥", src:"foraging 基因 rover 表型(真实多态)"},
-  sitter:{name:"安居 sitter", good:"食物吃掉后原地刷新,进食效果 +25%", bad:"速度 -10%", syn:"与 漫游 rover 互斥 · 站桩流核心", src:"foraging 基因 sitter 表型(真实多态)"},
-  mimic:{name:"拟态 mimic", good:"低速静止时捕食者丢失你(夜间无效)", bad:"静止时能量仍照扣", syn:"冻结战术,和 keep-moving 直觉对抗", src:"捕食者靠运动视觉捕猎(真实)"},
-  cannibal:{name:"同类相食 cannibal", good:"贴近野生型时每秒吸它 2 能量,并使它减速 20%", bad:"吸食时你同时气味暴露", src:"果蝇幼虫同类相食(真实行为)"},
-  diapause:{name:"滞育 diapause", good:"能量<30 时代谢 -60%,捕食者兴趣 -50%(假死)", bad:"滞育中速度 -40%、不能起跳", src:"滞育表型(真实逆境策略)"},
-  adh:{name:"酒量 adh", good:"吃腐物不再气味暴露,且获得 4s 醉跑(速度 +25%)", bad:"醉跑期间转向迟钝(惯性偏转)", src:"乙醇脱氢酶 Adh 基因(腐物=发酵=酒精)"},
-  phototax:{name:"趋光 phototax", good:"光照圈 0.3 内代谢 -30%(晒太阳回血)", bad:"夜晚被灯光持续吸引(躲不进黑暗)", syn:"与 夜视 nocturnal 分岔:日队 / 夜队", src:"趋光性行为 + 视运动回路(T4/T5)"},
-  guard:{name:"护卵 guard", good:"守在自己卵堆边时,捕食者改为优先攻击野生型", bad:"捕食者路过卵堆会吃掉你的卵", src:"护卵行为(真实母性策略)"},
-  clock:{name:"生物钟 clock", good:"白天代谢 -20%", bad:"夜晚代谢 +20%、感知 -10%", syn:"配 夜视 nocturnal = 昼夜双修;单拿 = 日行性 build", src:"period 基因 / LNv 时钟神经元(真实昼夜回路)"},
-  hopper:{name:"跳跃者 hopper", good:"任意时刻可主动满质量起跳(不赌 GF 时机)", bad:"主动跳能量消耗 ×1.5、冷却 +50%", syn:"主动闪避流:对 GF 玩法影响最大的一张卡", src:"跳跃行为可塑性(逃逸程序的上调)"},
-  pheromone:{name:"信息素 pheromone", good:"野生型产卵时你获提示,3s 内吃它产卵处的食物 +50%", bad:"你的产卵同样向它广播(同规则)", src:"表皮碳氢化合物信号(真实化学通讯)", syn:"信息战雏形:军备竞赛看得见"}
+  white:{name:"White eye", good:"Sense range +25%", bad:"Night sense penalty ×2 (white eyes see poorly at night)", eye:"#e8e2d0", src:"white gene · Morgan 1910 (the first genetics mutation)"},
+  curly:{name:"Curly wing", good:"Speed +18%", bad:"Metabolism +15%", src:"curly wing-shape mutation line"},
+  vestigial:{name:"Vestigial wing", good:"Energy cap +60; metabolism -10%", bad:"GF jump distance -40% (vestigial wings barely fly)", syn:"with Giant = a tank lineage that holds ground but runs slow", src:"vestigial wing mutation line"},
+  ebony:{name:"Ebony", good:"Predator damage -30%", bad:"Sense -12%", body:"#3a3630", src:"ebony body-colour mutation line"},
+  fecund:{name:"Fecund", good:"Egg cost -22%", bad:"Laying exposes odor for 2s", syn:"with Forager = an egg engine", src:"fertility trait"},
+  swift:{name:"Swift", good:"Dash cooldown -30%", bad:"Dash cost +40%", syn:"with Shaker = chained escapes", src:"flight-speed trait"},
+  hardy:{name:"Hardy", good:"Metabolism -16%", bad:"Speed -8%", src:"starvation-tolerance trait"},
+  nocturnal:{name:"Nocturnal", good:"No sense penalty at night", bad:"", syn:"with Tiger = night foraging; with Clock = a day-and-night build", src:"activity polymorphism"},
+  shaker:{name:"Shaker", good:"Speed +40% for 1.5s after a GF escape", bad:"", syn:"with Swift: run once you are clear", src:"shaker mutation line (K+ channel)"},
+  forager:{name:"Forager", good:"Food energy +35% (stacks)", bad:"Speed -18% for 1s after feeding", syn:"with Fecund: an egg engine", src:"foraging gene (rover/sitter locus)"},
+  thrift:{name:"Thrift", good:"Rot no longer exposes odor", bad:"", syn:"unlocks a rot farm: +38 rot for free; with Adh for belt and braces", src:"rot-feeding tolerance strategy"},
+  tiger:{name:"Tiger", good:"Bite knocks back and stuns the predator (8s cooldown)", bad:"", syn:"with Nocturnal: raid the rot at night", src:"warning colouration / anti-predator behaviour"},
+  giant:{name:"Giant", good:"Energy cap +60; the GF reflex fires more easily", bad:"Speed -15%", syn:"with Hardy: a tank lineage", src:"body-size trait"},
+  rover:{name:"Rover", good:"Speed +10%; food sense +20%", bad:"Metabolism +12%; eaten food bounces further", syn:"mutually exclusive with Sitter", src:"foraging gene, rover phenotype (a real polymorphism)"},
+  sitter:{name:"Sitter", good:"Food respawns where it was eaten; feeding +25%", bad:"Speed -10%", syn:"mutually exclusive with Rover · the core of a sit-and-wait build", src:"foraging gene, sitter phenotype (a real polymorphism)"},
+  mimic:{name:"Mimic", good:"Predator loses you while you hold still (useless at night)", bad:"Holding still still burns energy", syn:"a freeze tactic that fights the keep-moving instinct", src:"predators hunt on motion vision (real)"},
+  cannibal:{name:"Cannibal", good:"Beside the wild type: drain 2 energy a second and slow it 20%", bad:"Feeding exposes your odor at the same time", src:"cannibalism in fruit-fly larvae (real behaviour)"},
+  diapause:{name:"Diapause", good:"Under 30 energy: metabolism -60%, predator interest -50% (playing dead)", bad:"Speed -40% and no jump while in diapause", src:"diapause phenotype (a real stress strategy)"},
+  adh:{name:"Adh", good:"Rot no longer exposes odor and grants a 4s drunken sprint (speed +25%)", bad:"Turning goes sluggish while sprinting", src:"alcohol dehydrogenase (Adh) gene (rot = fermentation = alcohol)"},
+  phototax:{name:"Phototaxis", good:"Inside the light: metabolism -30% (sunbathing heals)", bad:"At night the lamp keeps pulling you out of the dark", syn:"splits from Nocturnal: day crew / night crew", src:"phototaxis plus the motion-vision circuit (T4/T5)"},
+  guard:{name:"Guard", good:"Sitting on your own egg cluster makes the predator hit the wild type first", bad:"The predator can eat your eggs in passing", src:"egg-guarding behaviour (a real maternal strategy)"},
+  clock:{name:"Clock", good:"Daytime metabolism -20%", bad:"Night metabolism +20%, sense -10%", syn:"with Nocturnal = a day-and-night build; alone = a diurnal build", src:"period gene / LNv clock neurons (a real circadian circuit)"},
+  hopper:{name:"Hopper", good:"Jump at full mass whenever you like (no gambling on GF timing)", bad:"Active jumps cost ×1.5 energy and +50% cooldown", syn:"the active-dodge build: the card that changes GF play the most", src:"jump-behaviour plasticity (an up-regulated escape program)"},
+  pheromone:{name:"Pheromone", good:"You are tipped off when the wild type lays; food near its cluster gives +50% for 3s", bad:"Your own laying broadcasts on the same channel", src:"cuticular hydrocarbon signals (real chemical communication)", syn:"information warfare in miniature: an arms race you can watch"}
 };
 export const NAMED_ONCE = ["white","curly","vestigial","ebony","nocturnal","shaker","thrift","tiger","giant",
   "sitter","mimic","cannibal","diapause","adh","phototax","guard","clock","hopper","pheromone"];

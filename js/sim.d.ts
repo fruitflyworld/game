@@ -46,6 +46,7 @@ export declare function seedRng(s: number): void;
 export declare function rng(): number;
 export declare const STACKABLE: string[];
 export declare const NAMED_ONCE: string[];
+export declare const TRAIT_INFO: Record<string, { name: string; good: string; bad?: string; syn?: string; src?: string }>;
 export declare function makeRng(seed: number): () => number;
 export declare function draftSeed(worldSeed: number, gen: number, eggs: number, rivalEggs: number): number;
 export declare function draftCards(worldSeed: number, gen: number, eggs: number, rivalEggs: number, owned: string[]): string[];
